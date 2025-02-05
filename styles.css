@@ -1,0 +1,28 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+}
+.widget-container {
+  width: 300px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  height: 92%;
+  width: 92%;
+}
+.widget-header {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  text-align: center;
+  font-weight: bolder;
+}
+.widget-content {
+  font-size: 1em;
+}

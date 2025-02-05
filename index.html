@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genesys Control Testing</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+      }
+      .left-frame {
+        width: 400px;
+        border: 0;
+      }
+      .right-frame {
+        flex-grow: 1;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe
+      class="left-frame"
+      src="widget.html?langTag=en-US&conversationId=10001"
+    >
+    </iframe>
+    <iframe class="right-frame" src="standalone.html?langTag=en-US"></iframe>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genesys Cloud Widget Control</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="library.js" defer></script>
+    <script>
+      var setUp = () => {
+        gct.init();
+        document.getElementById('conversationId').innerText =
+          gct.params.conversationId ?? 'Unknown';
+        document.getElementById('langTag').innerText = gct.params.langTag;
+      };
+    </script>
+  </head>
+  <body onload="setUp();">
+    <div class="widget-container">
+      <div class="widget-header">Genesys Cloud Widget</div>
+      <div class="widget-content">
+        <div>
+          <div>Conversation Id</div>
+          <div id="conversationId">Unknown</div>
+          <div>Lanaguage Tag:</div>
+          <div id="langTag">Unknown</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
