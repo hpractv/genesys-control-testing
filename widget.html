@@ -9,28 +9,49 @@
     <script src="data.json"></script>
     <script src="https://unpkg.com/lunr/lunr.js"></script>
     <script defer>
+      let idx;
       var setUp = async () => {
         await gct.init();
         document.getElementById('conversationId').innerText =
           gct.params.conversationId ?? 'Unknown';
         document.getElementById('langTag').innerText = gct.params.langTag;
 
-        var idx = lunr(function () {
+        idx = lunr(function () {
           this.ref('ID');
           this.field('FirstName');
           this.field('LastName');
           this.field('BirthDate');
           this.field('Age');
 
-          console.log('init::gct', gct.population);
-
           Array.prototype.forEach.call(gct.population, person => {
             this.add(person);
           });
         });
-        console.log('idx search', idx.search('Cooler')[0].matchData.metadata);
       };
 
+      const search = () => {
+        const text = document.getElementById('search').value;
+        const searchResults = document.getElementById('searchResults');
+        searchResults.replaceChildren([]);
+        const search = idx.search(`${text}*`);
+        if (search.length > 0) {
+          Array.prototype.forEach.call(search, r => {
+            var resultRow = document.createElement('tr');
+            var buildColumn = value => {
+              var column = document.createElement('td');
+              column.innerText = value;
+              resultRow.appendChild(column);
+            };
+            buildColumn(r.ref);
+            var person = gct.population.find(p => p.ID === Number(r.ref));
+            buildColumn(person.FirstName);
+            buildColumn(person.LastName);
+            buildColumn(person.BirthDate);
+            buildColumn(person.Age);
+            searchResults.appendChild(resultRow);
+          });
+        }
+      };
       window.onload = setUp;
     </script>
   </head>
@@ -48,11 +69,24 @@
         </div>
         <hr />
         <div>
-          Search <input id="search" type="text" size="25" />&nbsp;<button>
+          Search <input id="search" type="text" size="25" />&nbsp;<button
+            onclick="search()"
+          >
             Search
           </button>
 
-        </table
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Birth Date</th>
+                <th>Age</th>
+              </tr>
+            </thead>
+            <tbody id="searchResults"></tbody>
+          </table>
         </div>
         <div>
           First Name:
