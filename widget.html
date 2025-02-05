@@ -52,6 +52,11 @@
           });
         }
       };
+      const searchKeyDown = e => {
+        if (e.key === 'Enter') {
+          search();
+        }
+      };
       window.onload = setUp;
     </script>
   </head>
@@ -69,12 +74,8 @@
         </div>
         <hr />
         <div>
-          Search <input id="search" type="text" size="25" />&nbsp;<button
-            onclick="search()"
-          >
-            Search
-          </button>
-
+          Search
+          <input id="search" type="text" size="35" onkeydown="search(event)" />
           <table>
             <thead>
               <tr>
