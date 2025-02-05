@@ -6,24 +6,69 @@
     <title>Genesys Cloud Widget Control</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="library.js" defer></script>
-    <script>
-      var setUp = () => {
-        gct.init();
+    <script src="data.json"></script>
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script defer>
+      var setUp = async () => {
+        await gct.init();
         document.getElementById('conversationId').innerText =
           gct.params.conversationId ?? 'Unknown';
         document.getElementById('langTag').innerText = gct.params.langTag;
+
+        var idx = lunr(function () {
+          this.ref('ID');
+          this.field('FirstName');
+          this.field('LastName');
+          this.field('BirthDate');
+          this.field('Age');
+
+          console.log('init::gct', gct.population);
+
+          Array.prototype.forEach.call(gct.population, person => {
+            this.add(person);
+          });
+        });
+        console.log('idx search', idx.search('Cooler')[0].matchData.metadata);
       };
+
+      window.onload = setUp;
     </script>
   </head>
-  <body onload="setUp();">
+  <body>
     <div class="widget-container">
       <div class="widget-header">Genesys Cloud Widget</div>
       <div class="widget-content">
         <div>
-          <div>Conversation Id</div>
+          Conversation Id:
           <div id="conversationId">Unknown</div>
-          <div>Lanaguage Tag:</div>
+        </div>
+        <div>
+          Lanaguage Tag:
           <div id="langTag">Unknown</div>
+        </div>
+        <hr />
+        <div>
+          Search <input id="search" type="text" size="25" />&nbsp;<button>
+            Search
+          </button>
+
+        </table
+        </div>
+        <div>
+          First Name:
+          <div id="firstName"></div>
+        </div>
+        <div>
+          Middle Name:
+          <div id="middleName"></div>
+        </div>
+        <div>
+          Last Name:
+          <div id="lastName"></div>
+        </div>
+        <div>
+          Age
+          <div id="age"></div>
         </div>
       </div>
     </div>
