@@ -46,7 +46,7 @@ gct.BROADCAST_SENDER = {
 };
 
 const joinBroadcast = async (sender, callback) => {
-  gct.broadCastSender = sender;
+  gct.broadcastSender = sender;
   gct.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
   gct.broadcastChannel.onmessage = event => {
     callback(event.data);
@@ -55,7 +55,7 @@ const joinBroadcast = async (sender, callback) => {
 
 gct.sendBroadcast = async message => {
   gct.broadcastChannel.postMessage({
-    sender: gct.broadCastSender,
+    sender: gct.broadcastSender,
     message: message,
   });
 };

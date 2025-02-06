@@ -27,13 +27,17 @@
           });
         });
 
-        gct.sendBroadcast('Hello from the widget!');
+        console.log('widget: gct.broadcastSender', gct.broadcastSender);
+
       };
 
       const receiveBroadcastMessage = event => {
         const {sender, message} = event;
-        console.log(`Received message from ${sender}: ${message}`);
-      }
+        //ignore messages from myself
+        if(sender !== gct.broadcastSender){
+          console.log(`Received message from ${sender}: ${message}`);
+        }
+     }
 
       const search = () => {
         const text = document.getElementById('search').value;
@@ -88,6 +92,9 @@
           Lanaguage Tag:
           <div id="langTag">Unknown</div>
         </div>
+        <button
+          onclick="gct.sendBroadcast('Hello from the widget control!')"
+        >Send Broadcast</button>
         <hr />
         <h3>Head of Household Search</h3>
         <div>
