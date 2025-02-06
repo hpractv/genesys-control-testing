@@ -26,3 +26,6 @@ body {
 .widget-content {
   font-size: 1em;
 }
+tr.selectable {
+  cursor: pointer;
+}

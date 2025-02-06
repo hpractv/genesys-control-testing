@@ -12,7 +12,12 @@ gct.getQueryParam = name => {
   return gct.urlParams.has(name) ? gct.urlParams.get(name) : null;
 };
 
-const loadData = async () => {
+gct.DATALOAD = {
+  POPULATION: 1,
+  HEADSOFHOUSEHOLD: 2,
+};
+
+const loadData = async elements => {
   await fetch('data.json')
     .then(response => {
       if (!response.ok) {
@@ -21,14 +26,41 @@ const loadData = async () => {
       return response.json();
     })
     .then(data => {
-      gct.population = data.population;
+      if (elements & (gct.DATALOAD.POPULATION !== 0)) {
+        gct.population = data.population;
+      }
+      if (elements & (gct.DATALOAD.HEADSOFHOUSEHOLD !== 0)) {
+        gct.headsOfHousehold = data.headsOfHousehold;
+      }
     })
     .catch(error => {
       console.error('There was a problem with the fetch operation:', error);
     });
 };
 
-gct.init = async () => {
+const BROADCAST_CHANNEL_NAME = 'gct';
+gct.BROADCAST_SENDER = {
+  WIDGET: 1,
+  STANDALONE: 2,
+  INTERACTION: 3,
+};
+
+const joinBroadcast = async (sender, callback) => {
+  gct.broadCastSender = sender;
+  gct.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+  gct.broadcastChannel.onmessage = event => {
+    callback(event.data);
+  };
+};
+
+gct.sendBroadcast = async message => {
+  gct.broadcastChannel.postMessage({
+    sender: gct.broadCastSender,
+    message: message,
+  });
+};
+
+gct.init = async (elements, sender, messageCallback) => {
   gct.urlParams = new URLSearchParams(window.location.search);
   gct.params = {};
   gct.params.langTag = gct.getQueryParam('langTag');
@@ -37,5 +69,6 @@ gct.init = async () => {
   gct.params.conversationId = gct.getQueryParam('conversationId');
   gct.params.usePopupAuth = gct.getQueryParam('usePopupAuth');
 
-  await loadData();
+  await loadData(elements);
+  await joinBroadcast(sender, messageCallback);
 };

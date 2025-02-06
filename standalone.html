@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Genesys Cloud Standalone Control</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="library.js" defer></script>
+    <script defer>
+      var setUp = async () => {
+        await gct.init(
+          gct.DATALOAD.POPULATION,
+          gct.BROADCAST_SENDER.STANDALONE,
+          receiveBroadcastMessage,
+        );
+
+        gct.sendBroadcast('Hello from the standalone app!');
+      };
+
+      const receiveBroadcastMessage = event => {
+        const { sender, message } = event;
+        console.log(`Received message from ${sender}: ${message}`);
+      };
+
+      window.onload = setUp;
+    </script>
   </head>
   <body>
     <div class="widget-container">

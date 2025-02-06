@@ -10,8 +10,9 @@
     <script src="https://unpkg.com/lunr/lunr.js"></script>
     <script defer>
       let idx;
+
       var setUp = async () => {
-        await gct.init();
+        await gct.init(gct.DATALOAD.POPULATION, gct.BROADCAST_SENDER.WIDGET, receiveBroadcastMessage);
         document.getElementById('conversationId').innerText =
           gct.params.conversationId ?? 'Unknown';
         document.getElementById('langTag').innerText = gct.params.langTag;
@@ -20,35 +21,49 @@
           this.ref('ID');
           this.field('FirstName');
           this.field('LastName');
-          this.field('BirthDate');
-          this.field('Age');
 
           Array.prototype.forEach.call(gct.population, person => {
             this.add(person);
           });
         });
+
+        gct.sendBroadcast('Hello from the widget!');
       };
+
+      const receiveBroadcastMessage = event => {
+        const {sender, message} = event;
+        console.log(`Received message from ${sender}: ${message}`);
+      }
 
       const search = () => {
         const text = document.getElementById('search').value;
         const searchResults = document.getElementById('searchResults');
         searchResults.replaceChildren([]);
         const search = idx.search(`${text}*`);
+
         if (search.length > 0) {
           Array.prototype.forEach.call(search, r => {
-            var resultRow = document.createElement('tr');
-            var buildColumn = value => {
-              var column = document.createElement('td');
-              column.innerText = value;
-              resultRow.appendChild(column);
-            };
-            buildColumn(r.ref);
-            var person = gct.population.find(p => p.ID === Number(r.ref));
-            buildColumn(person.FirstName);
-            buildColumn(person.LastName);
-            buildColumn(person.BirthDate);
-            buildColumn(person.Age);
-            searchResults.appendChild(resultRow);
+            const person = gct.population.find(
+              p => p.ID === Number(r.ref) && p.HeadOfHousehold === null,
+            );
+
+            if (person) {
+              var resultRow = document.createElement('tr');
+              resultRow.classList.add('selectable');
+
+              var buildColumn = value => {
+                var column = document.createElement('td');
+                column.innerText = value;
+                resultRow.appendChild(column);
+              };
+
+              buildColumn(r.ref);
+              buildColumn(person.FirstName);
+              buildColumn(person.LastName);
+              buildColumn(person.BirthDate);
+              buildColumn(person.Age);
+              searchResults.appendChild(resultRow);
+            }
           });
         }
       };
@@ -57,6 +72,7 @@
           search();
         }
       };
+
       window.onload = setUp;
     </script>
   </head>
@@ -73,10 +89,11 @@
           <div id="langTag">Unknown</div>
         </div>
         <hr />
+        <h3>Head of Household Search</h3>
         <div>
           Search
           <input id="search" type="text" size="35" onkeydown="search(event)" />
-          <table>
+          <table style="padding-left: 0px; margin-left: 0px; margin-top: 15px; border: 1px solid gray">
             <thead>
               <tr>
                 <th>ID</th>
@@ -86,26 +103,11 @@
                 <th>Age</th>
               </tr>
             </thead>
-            <tbody id="searchResults"></tbody>
+            <tbody id="searchResults">
+              <tr><td colspan="5">Enter search text for results</td></tr>
+            </tbody>
           </table>
         </div>
-        <div>
-          First Name:
-          <div id="firstName"></div>
-        </div>
-        <div>
-          Middle Name:
-          <div id="middleName"></div>
-        </div>
-        <div>
-          Last Name:
-          <div id="lastName"></div>
-        </div>
-        <div>
-          Age
-          <div id="age"></div>
-        </div>
-      </div>
     </div>
   </body>
 </html>
