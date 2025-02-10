@@ -9,7 +9,7 @@
     <script src="data.json"></script>
     <script defer>
       var init = async () => {
-        await pd.init(gct);
+        await pd.init(gct, gct.BROADCAST_SENDER.STANDALONE);
         ['household', 'interactions'].forEach(id => {
           document.getElementById(id).style.visibility = 'hidden';
         });

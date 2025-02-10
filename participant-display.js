@@ -1,10 +1,10 @@
 'use strict';
 var pd = {};
 
-pd.init = async gct => {
+pd.init = async (gct, broadcaster) => {
   await gct.init(
     gct.DATALOAD.POPULATION,
-    gct.BROADCAST_SENDER.INTERACTION,
+    broadcaster,
     pd.receiveBroadcastMessage,
   );
 

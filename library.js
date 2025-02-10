@@ -43,6 +43,7 @@ gct.BROADCAST_SENDER = {
   AGENT_SCRIPT: 1,
   INTERACTION: 2,
   SIDEBAR: 4,
+  STANDALONE: 8,
 };
 
 const joinBroadcast = async (sender, callback) => {
