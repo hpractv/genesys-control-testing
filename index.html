@@ -12,21 +12,21 @@
         height: 100vh;
       }
       .left-frame {
-        width: 400px;
-        border: 0;
+        width: 600px;
+        border: 1px solid lightgray;
       }
       .right-frame {
         flex-grow: 1;
-        border: 0;
+        border: 1px solid lightgray;
       }
     </style>
   </head>
   <body>
     <iframe
       class="left-frame"
-      src="widget.html?langTag=en-US&conversationId=10001"
+      src="agent-script.html?langTag=en-US&conversationId=10001"
     >
     </iframe>
-    <iframe class="right-frame" src="standalone.html?langTag=en-US"></iframe>
+    <iframe class="right-frame" src="interaction.html?langTag=en-US"></iframe>
   </body>
 </html>

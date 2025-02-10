@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Sidebar Participant Search</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script src="library.js" defer></script>
+    <script src="participant-search.js" defer></script>
+    <script src="data.json"></script>
+    <script defer>
+      var init = async () => await ps.init(
+        gct,
+        gct.BROADCAST_SENDER.SIDEBAR
+      );
+      window.onload = init;
+    </script>
+  </head>
+  <body>
+    <div class="widget-container">
+      <div class="widget-header">SideBar Participant Search</div>
+      <div class="widget-content">
+        <div style="margin-top: 20px;">
+          Search
+          <input id="search" type="text" size="35" onkeydown="ps.searchKeyDown(event)" />
+          <table id="searchResultsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Birth Date</th>
+                <th>Age</th>
+              </tr>
+            </thead>
+            <tbody id="searchResults">
+              <tr><td colspan="5" align="middle">Enter search text for results</td></tr>
+            </tbody>
+          </table>
+          <p id="note" style="visibility: none;color:darkgray;font-style:italic;"><strong>*</strong>Head of household</p>
+          </div>
+        </div>
+  </body>
+</html>

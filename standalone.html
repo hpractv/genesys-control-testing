@@ -1,43 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Genesys Cloud Standalone Control</title>
+    <title>Standalone Participant Details</title>
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
     <link rel="stylesheet" href="styles.css" />
     <script src="library.js" defer></script>
+    <script src="participant-display.js" defer></script>
+    <script src="data.json"></script>
     <script defer>
-      var setUp = async () => {
-        await gct.init(
-          gct.DATALOAD.POPULATION,
-          gct.BROADCAST_SENDER.STANDALONE,
-          receiveBroadcastMessage,
-        );
-        console.log('standalone: gct.broadcastSender', gct.broadcastSender);
+      var init = async () => {
+        await pd.init(gct);
+        ['household', 'interactions'].forEach(id => {
+          document.getElementById(id).style.visibility = 'hidden';
+        });
       };
-
-      const receiveBroadcastMessage = event => {
-        const { sender, message } = event;
-        //ignore messages from myself
-        if (sender !== gct.broadcastSender) {
-          console.log(`Received message from ${sender}: ${message}`);
-        }
+      const placeholderAlert = () => {
+        alert('This page is a placeholder for future functionality');
       };
-
-      window.onload = setUp;
+      window.onload = init;
     </script>
   </head>
   <body>
     <div class="widget-container">
-      <div class="widget-header">Genesys Cloud Standalone</div>
+      <div class="widget-header">
+        Standalone Participant Detail
+        <p id="setFrom"></p>
+      </div>
       <div class="widget-content">
-        <p>Welcome to the Genesys Cloud Widget!</p>
-        <p>This is a simple example of an HTML widget.</p>
-        <button
-          onclick="gct.sendBroadcast('Hello from the standalone control!')"
-        >
-          Send Broadcast
-        </button>
+        <div>
+          <div class="detail">
+            <h2>
+              Name:
+              <p id="name"></p>
+            </h2>
+            <strong>Age:</strong>
+            <p id="age"></p>
+
+            <div id="household">
+              <h2>Household</h2>
+              <div id="headOfHousehold">
+                <strong>Head:</strong>
+                <p id="headName"></p>
+              </div>
+              <div id="dependants">
+                <strong>Dependendants:</strong>
+                <ul id="dependantsList"></ul>
+              </div>
+            </div>
+
+            <div id="interactions">
+              <h2>Interactions:</h2>
+              <ul>
+                <li><a href="#" onclick="placeholderAlert();">Shopping</a></li>
+                <li><a href="#" onclick="placeholderAlert();">Profile</a></li>
+                <li><a href="#" onclick="placeholderAlert();">FIT</a></li>
+                <li>
+                  <a href="#" onclick="placeholderAlert()"
+                    >Accounts Administration Reimbursement Center</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

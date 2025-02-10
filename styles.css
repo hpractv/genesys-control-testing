@@ -5,14 +5,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f4f4f4;
+  height: 100%;
+  width: 100%;
 }
 .widget-container {
   width: 300px;
   padding: 20px;
   background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   height: 92%;
   width: 92%;
@@ -25,7 +24,32 @@ body {
 }
 .widget-content {
   font-size: 1em;
+  display: inline;
+}
+
+table#searchResultsTable {
+  border: none;
+  padding: 0px;
+  margin: 0px;
 }
 tr.selectable {
   cursor: pointer;
+}
+tr.selected {
+  background-color: #b2d4ff;
+}
+table#searchResultsTable td {
+  border: none;
+  padding: 0px;
+  margin: 0px;
+}
+p {
+  display: inline;
+}
+table#searchResultsTable {
+  margin-top: 20px;
+  width: 100%;
+}
+table#searchResultsTable td {
+  padding: 10px;
 }

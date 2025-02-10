@@ -40,16 +40,20 @@ const loadData = async elements => {
 
 const BROADCAST_CHANNEL_NAME = 'gct';
 gct.BROADCAST_SENDER = {
-  WIDGET: 1,
-  STANDALONE: 2,
-  INTERACTION: 3,
+  AGENT_SCRIPT: 1,
+  INTERACTION: 2,
+  SIDEBAR: 4,
 };
 
 const joinBroadcast = async (sender, callback) => {
   gct.broadcastSender = sender;
   gct.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
   gct.broadcastChannel.onmessage = event => {
-    callback(event.data);
+    const { sender, message } = event.data;
+    //ignore messages from myself
+    if (sender !== gct.broadcastSender) {
+      callback(sender, message);
+    }
   };
 };
 
@@ -71,4 +75,8 @@ gct.init = async (elements, sender, messageCallback) => {
 
   await loadData(elements);
   await joinBroadcast(sender, messageCallback);
+};
+
+gct.MESSAGE_ACTIONS = {
+  SELECT_PARTICIPANT: 1,
 };
