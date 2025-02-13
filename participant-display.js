@@ -1,12 +1,8 @@
 'use strict';
 var pd = {};
 
-pd.init = async (gct, broadcaster) => {
-  await gct.init(
-    gct.DATALOAD.POPULATION,
-    broadcaster,
-    pd.receiveBroadcastMessage,
-  );
+pd.init = async (gct, broadcaster, receiveBroadcastMessage) => {
+  await gct.init(gct.DATALOAD.POPULATION, broadcaster, receiveBroadcastMessage);
 
   pd.idx = lunr(function () {
     this.ref('ID');
@@ -18,19 +14,6 @@ pd.init = async (gct, broadcaster) => {
   });
 };
 
-pd.receiveBroadcastMessage = (sender, message) => {
-  if (
-    sender === gct.BROADCAST_SENDER.SIDEBAR ||
-    sender === gct.BROADCAST_SENDER.AGENT_SCRIPT
-  ) {
-    document.getElementById('setFrom').innerText =
-      sender === gct.BROADCAST_SENDER.SIDEBAR ? 'Sidebar' : 'Agent Script';
-    if (message.action == gct.MESSAGE_ACTIONS.SELECT_PARTICIPANT) {
-      pd.setParticipant(message.id);
-    }
-  }
-};
-
 const nameDisplay = (first, middle, last) => {
   var middleDisplay = ' ';
   if (middle !== null) {
@@ -39,7 +22,7 @@ const nameDisplay = (first, middle, last) => {
   return `${first}${middleDisplay}${last}`;
 };
 
-pd.setParticipant = id => {
+pd.setParticipantInfo = id => {
   var participant = gct.population.filter(p => p.ID === id)[0];
   var household = gct.population.filter(
     p => p.HeadOfHousehold === participant.HeadOfHousehold,
@@ -53,9 +36,7 @@ pd.setParticipant = id => {
       participant.LastName,
     ) + (isHead ? ' (Head)' : '');
 
-  ['household', 'interactions'].forEach(id => {
-    document.getElementById(id).style.visibility = 'visible';
-  });
+  document.getElementById('household').style.visibility = 'visible';
   document.getElementById('age').innerText = participant.Age;
   document.getElementById('headOfHousehold').style.visibility = isHead
     ? 'hidden'
@@ -86,6 +67,22 @@ pd.setParticipant = id => {
       dependantsList.appendChild(li);
     });
   }
+};
 
+pd.setCallReason = reason => {
+  document.getElementById('callReason').innerText = reason;
+};
+
+pd.enableParticipantInteractions = () => {
   document.getElementById('interactions').style.visibility = 'visible';
+};
+
+pd.resetParticipantDisplay = () => {
+  document.getElementById('name').innerText = '';
+  document.getElementById('age').innerText = '';
+  document.getElementById('callReason').innerText = '';
+  document.getElementById('household').style.visibility = 'hidden';
+  document.getElementById('headOfHousehold').style.visibility = 'hidden';
+  document.getElementById('dependants').style.visibility = 'hidden';
+  document.getElementById('interactions').style.visibility = 'hidden';
 };

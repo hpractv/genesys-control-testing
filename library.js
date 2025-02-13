@@ -79,5 +79,8 @@ gct.init = async (elements, sender, messageCallback) => {
 };
 
 gct.MESSAGE_ACTIONS = {
-  SELECT_PARTICIPANT: 1,
+  SET_PARTICIPANT_INFO: 1,
+  SET_REASON_FOR_CALL: 2,
+  ENABLE_PARTICIPANT_INTERACTION: 3,
+  RESET_PARTICIPANT_DISPLAY: 4,
 };

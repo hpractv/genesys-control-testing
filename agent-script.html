@@ -7,20 +7,65 @@
     <script src="library.js" defer></script>
     <script src="participant-search.js" defer></script>
     <script src="data.json"></script>
+    <script src="agent-script.js" defer></script>
     <script defer>
       var init = async () => await ps.init(
         gct,
         gct.BROADCAST_SENDER.AGENT_SCRIPT,
       );
+
       window.onload = init;
+
+      const reset = () => {
+        document.getElementById('submitDispostion').disabled = true;
+        document.getElementById('dispositionParticipants').replaceChildren([]);
+        document.getElementById('callDisposition').style.visibility = 'hidden';
+        document.getElementById('participantSearch').style.visibility = 'hidden';
+        document.getElementById('reasonForCall').style.visibility = 'visible';
+        gct.sendBroadcast({
+          action: gct.MESSAGE_ACTIONS.RESET_PARTICIPANT_DISPLAY,
+        });
+      };
     </script>
   </head>
   <body>
     <div class="widget-container">
-      <div class="widget-header">Agent Script Participant Search</div>
+      <div class="widget-header">Agent Script</div>
       <div class="widget-content">
-        <div style="margin-top: 20px;">
-          Search
+        <div id="reasonForCall" class="step">
+          <h2>Reason for Call</h2>
+          Select a reason for call <select id="reasonForCall">
+            <optGroup label="1 Enrollment / Application">
+              <option>Needs to Enroll</option>
+              <option>Questions about Enrolling</option>
+              <option>Schedule Appointment</option>
+              <option>Checking Status of the App/Policy</option>
+              <option>Asking for Plan ID Cards</option>
+              <option>Questions about Plan Details</option>
+              <option>Wants to Cancel their Plan</option>
+            </option>
+            <optGroup label="2 Funding">
+              <option>Unpaid Reimbursement</option>
+              <option>What is my Account Balance</option>
+              <option>Why is my Account Balance what it is</option>
+              <option>What Expenses are Eligible for Reimbursement</option>
+              <option>Requesting Reimbursement Forms</option>
+              <option>AR Payment Not Received</option>
+              <option>Turn AR On or Off</option>
+              <option>Lost Reimbursement Check</option>
+              <option>Direct Deposit</option>
+              <option>Make IFP Funding Election</option>
+            </optGroup>
+            <optGroup label="3 Customer Service">
+              <option>Unable to Log In to the Website</option>
+              <option>Help Using the Website</option>
+            </optGroup>
+          </select>
+          <button onclick="ps.setReason();">Set</button>
+        </div>
+        <div  id="participantSearch" style="visibility: hidden;"  class="step">
+          <h2>Participant Search</h2>
+          Search String
           <input id="search" type="text" size="35" onkeydown="ps.searchKeyDown(event)" />
           <table id="searchResultsTable">
             <thead>
@@ -37,7 +82,19 @@
             </tbody>
           </table>
           <p id="note" style="visibility: none;color:darkgray;font-style:italic;"><strong>*</strong>Head of household</p>
-          </div>
+          <br/>
+          <button id="enableParticipantInteractionsButton" onclick="ps.enableParticipantInteractionsAndDispositionSetup();" disabled>Set</button>
         </div>
+        <div id="callDisposition" style="visibility: hidden;" class="step">
+          <h2>Disposition of the Call</h2>
+          Please indicate which members of the household you spoke with on the call, then select a disposition from the list.
+          <br/>
+          <br/>
+          <strong>Who was on othe call?</strong>
+          <ul id="dispositionParticipants"></ul>
+          <br/>
+          <button id="submitDispostion" onclick="reset();" disabled>Submit</button>
+        </div>
+      </div>
   </body>
 </html>
