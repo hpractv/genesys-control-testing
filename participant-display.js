@@ -36,8 +36,6 @@ pd.setParticipantsInfo = ids => {
       household.push(p);
     });
 
-  console.log('household', household);
-
   var participantsDisplay = document.getElementById('participants');
   participantsDisplay.style.visibility = 'visible';
   const participantsList = document.getElementById('participantsDetails');

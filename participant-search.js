@@ -327,6 +327,12 @@ ps.setDispositionSubmit = () => {
   submit.disabled = disabled;
 };
 
+ps.kbSearchKeyDown = e => {
+  if (e.key === 'Enter') {
+    ps.getBaconIpsum();
+  }
+};
+
 ps.getBaconIpsum = async () => {
   var searchBox = document.getElementById('kbSearch');
   var search = searchBox.value;
