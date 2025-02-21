@@ -26,8 +26,6 @@ ps.init = async (gct, broadcaster) => {
 };
 
 ps.receiveBroadcastMessage = (sender, message) => {
-  console.log('sender', sender);
-  console.log('message', message);
   if (sender === gct.BROADCAST_SENDER.INTERACTION) {
     switch (message.action) {
       case gct.MESSAGE_ACTIONS.ENABLE_CALL_DISPOSITION:

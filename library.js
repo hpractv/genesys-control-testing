@@ -93,3 +93,21 @@ gct.nameDisplay = participant => {
   }
   return `${participant.FirstName}${middleDisplay}${participant.LastName}`;
 };
+
+gct.TOOL_VARS = {
+  TITLE: 'tool-title',
+  PARTICIPANT: 'tool-participant',
+  CONTENT: 'tool-content',
+};
+
+gct.openTool = (title, participantName) => {
+  localStorage.setItem(gct.TOOL_VARS.TITLE, title);
+  localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
+  localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
+  window.open(
+    `popup-tool.html`,
+    'Tool',
+    'height=600,width=800,location=0,resizable=0,scrollbars=0',
+  );
+  return false;
+};

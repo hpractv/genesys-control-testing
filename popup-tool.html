@@ -1,0 +1,25 @@
+<html>
+  <title>Popup Tool</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="library.js" defer></script>
+  <script defer>
+    const init = async () => {
+      var title = localStorage.getItem(gct.TOOL_VARS.TITLE);
+      var participant = localStorage.getItem(gct.TOOL_VARS.PARTICIPANT);
+      var content = localStorage.getItem(gct.TOOL_VARS.CONTENT);
+
+      document.getElementById('popupHeader').innerText = title;
+      document.getElementById('participant').innerText = participant;
+      document.getElementById('popupContent').innerText = content;
+    };
+
+    window.onload = init;
+  </script>
+  <body>
+    <div class="popupContainer">
+      <div id="popupHeader" class="popupHeader"></div>
+      <div id="participant" class="popupParticipant"></div>
+      <div id="popupContent" class="popupContent"></div>
+    </div>
+  </body>
+</html>

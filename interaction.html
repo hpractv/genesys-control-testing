@@ -12,7 +12,6 @@
         if (sender === gct.BROADCAST_SENDER.AGENT_SCRIPT) {
           switch (message.action) {
             case gct.MESSAGE_ACTIONS.SET_PARTICIPANTS_INFO:
-              console.log('message', message);
               pd.setParticipantsInfo(message.ids);
               break;
             case gct.MESSAGE_ACTIONS.SET_REASON_FOR_CALL:
@@ -36,10 +35,6 @@
         );
       };
 
-      const placeholderAlert = () => {
-        alert('This page is a placeholder for future functionality');
-      };
-
       window.onload = init;
     </script>
   </head>
@@ -58,6 +53,11 @@
           <div id="participants" style="visibility: hidden">
             <h2>Participants</h2>
             <div id="participantsDetails"></div>
+          </div>
+          <br />
+          <div id="household" style="visibility: hidden">
+            <h2>Household</h2>
+            <ul id="householdMembers"></ul>
           </div>
           <br />
           <button

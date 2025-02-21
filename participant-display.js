@@ -23,7 +23,7 @@ pd.setParticipantsInfo = ids => {
 
   var household = [];
   household.push(
-    gct.population.filter(p => p.ID === participants[0].household)[0],
+    gct.population.filter(p => p.ID === participants[0].HeadOfHousehold)[0],
   );
 
   gct.population
@@ -36,18 +36,25 @@ pd.setParticipantsInfo = ids => {
       household.push(p);
     });
 
+  console.log('household', household);
+
   var participantsDisplay = document.getElementById('participants');
   participantsDisplay.style.visibility = 'visible';
   const participantsList = document.getElementById('participantsDetails');
 
-  [
-    participants.filter(p => p.ID === p.HeadOfHousehold)[0],
+  var participantsDisplay = [];
+  participantsDisplay.push(
+    ...participants.filter(p => p.ID === p.HeadOfHousehold),
+  );
+  participantsDisplay.push(
     ...participants
       .filter(p => p.ID !== p.HeadOfHousehold)
       .sort((a, b) => {
         return b.Age - a.Age;
       }),
-  ]
+  );
+
+  participantsDisplay
     .map(p => {
       var detail = document.createElement('details');
       detail.className = 'participant';
@@ -99,6 +106,16 @@ pd.setParticipantsInfo = ids => {
   if (firstChild) {
     firstChild.setAttribute('open', true);
   }
+
+  var householdList = document.getElementById('householdMembers');
+  householdList.replaceChildren([]);
+  household.forEach(h => {
+    var li = document.createElement('li');
+    li.innerText = gct.nameDisplay(h);
+    householdList.appendChild(li);
+  });
+
+  document.getElementById('household').style.visibility = 'visible';
 };
 
 pd.setCallReason = reason => {
@@ -108,20 +125,24 @@ pd.setCallReason = reason => {
 };
 
 pd.enableParticipantInteractions = () => {
-  [...document.getElementById('participantsDetails').children].forEach(d => {
-    d.appendChild(pd.createInteractionControls());
+  var participant = document.getElementById('participantsDetails');
+  var participantName = participant.children[0].children[0].innerText;
+  [...participant.children].forEach(d => {
+    d.appendChild(pd.createInteractionControls(participantName));
   });
 };
 
-pd.createInteractionControls = () => {
-  var container = document.createElement('div'); //<div id="interactions" style="visibility: hidden">
+pd.createInteractionControls = participant => {
+  var container = document.createElement('div');
   container.id = 'interactions';
 
   var title = document.createElement('h3');
+  title.className = 'detailsInterations';
   title.innerText = 'Interactions';
   container.appendChild(title);
 
   var links = document.createElement('ul');
+  container.className = 'detailsInteractions';
   container.appendChild(links);
 
   var addLink = (text, callback) => {
@@ -129,16 +150,16 @@ pd.createInteractionControls = () => {
     var a = document.createElement('a');
     a.href = '#';
     a.innerText = text;
-    a.onclick = placeholderAlert;
+    a.onclick = () => gct.openTool(text, participant);
     li.appendChild(a);
     links.appendChild(li);
-    return li;
   };
 
-  container.append(addLink('Shopping'));
-  container.append(addLink('Profile'));
-  container.append(addLink('FIT'));
-  container.append(addLink('Accounts Administration Reimbursement Center'));
+  addLink('Shopping');
+  addLink('Profile');
+  addLink('FIT');
+  addLink('Accounts Administration Reimbursement Center');
+
   return container;
 };
 
@@ -153,5 +174,6 @@ pd.resetParticipantDisplay = () => {
   pd.dispositionButton.disabled = true;
   document.getElementById('callReason').innerText = '';
   document.getElementById('participants').style.visibility = 'hidden';
+  document.getElementById('household').style.visibility = 'hidden';
   document.getElementById('participantsDetails').replaceChildren([]);
 };

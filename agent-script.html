@@ -7,7 +7,7 @@
     <script src="library.js" defer></script>
     <script src="participant-search.js" defer></script>
     <script src="data.json"></script>
-    <script src="agent-script.js" defer></script>
+    <script src="agent-script.js" type="text/javascript" defer></script>
     <script defer>
 
       const searchInstructionRow = document.createElement('tr');
@@ -93,11 +93,11 @@
 
           <h3>Documentaion</h3>
           <ul id="documents">
-            <li><a href="#">Call Procedures</a></li>
-            <li><a href="#">Funding Guide</a></li>
-            <li><a href="#">Client Guide</a></li>
-            <li><a href="#">Carrier Guide</a></li>
-            <li><a href="#">KB Articles</a></li>
+            <li><a href="#" onclick="gct.openTool('Call Procedures', '');">Call Procedures</a></li>
+            <li><a href="#" onclick="gct.openTool('Funding Guide', '');">Funding Guide</a></li>
+            <li><a href="#" onclick="gct.openTool('Client Guide', '');">Client Guide</a></li>
+            <li><a href="#" onclick="gct.openTool('Carrier Guide', '');">Carrier Guide</a></li>
+            <li><a href="#" onclick="gct.openTool('KB Articles', '');">KB Articles</a></li>
           </ul>
         </div>
 
