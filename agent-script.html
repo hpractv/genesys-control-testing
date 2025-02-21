@@ -9,32 +9,52 @@
     <script src="data.json"></script>
     <script src="agent-script.js" defer></script>
     <script defer>
-      var init = async () => await ps.init(
-        gct,
-        gct.BROADCAST_SENDER.AGENT_SCRIPT,
-      );
+
+      const searchInstructionRow = document.createElement('tr');
+      const searchInstructionCell = document.createElement('td');
+      searchInstructionCell.colSpan = 5;
+      searchInstructionCell.align = 'middle';
+      searchInstructionCell.innerText = 'Enter search text for results';
+      searchInstructionRow.appendChild(searchInstructionCell);
+
+      var init = async () => {
+        await ps.init(
+          gct,
+          gct.BROADCAST_SENDER.AGENT_SCRIPT
+        );
+        ps.resetAgentScript();
+      };
 
       window.onload = init;
-
-      const reset = () => {
-        document.getElementById('submitDispostion').disabled = true;
-        document.getElementById('dispositionParticipants').replaceChildren([]);
-        document.getElementById('callDisposition').style.visibility = 'hidden';
-        document.getElementById('participantSearch').style.visibility = 'hidden';
-        document.getElementById('reasonForCall').style.visibility = 'visible';
-        gct.sendBroadcast({
-          action: gct.MESSAGE_ACTIONS.RESET_PARTICIPANT_DISPLAY,
-        });
-      };
     </script>
   </head>
+  <!--
+  1. Secure the call
+  2. Call Reason
+  3. Call Dispostiion
+  -->
   <body>
     <div class="widget-container">
       <div class="widget-header">Agent Script</div>
       <div class="widget-content">
-        <div id="reasonForCall" class="step">
+         <div id="secureCall" style="visibility: visible;" class="step">
+          <h2>Secure the Call</h2>
+          Secure the call for all participants on the call. Use the checkboxes to indicate whom the call has been secured for. If it is a POA or Approved Representative, mark the checkboxes next to each customer they authenticate for.
+          Verify the participant's first and last name with at least 2 of 3 of the following pieces of participant information:
+          <ul>
+            <li>Phone Number</li>
+            <li>Zip Code</li>
+            <li>Date of Birth</li>
+          </ul>
+          <ul id="secureTheCallParticipants" class="participants">
+            <li>Loading...</li>
+          </ul>
+          <button id="secureTheCallButton" onclick="ps.secureTheCallConfirmation();" disabled>Submit</button>
+        </div>
+
+        <div id="reasonForCall" class="step" style="visibility: hidden;">
           <h2>Reason for Call</h2>
-          Select a reason for call <select id="reasonForCall">
+          Select a reason for call <select id="reasonForCallSelect">
             <optGroup label="1 Enrollment / Application">
               <option>Needs to Enroll</option>
               <option>Questions about Enrolling</option>
@@ -63,37 +83,33 @@
           </select>
           <button onclick="ps.setReason();">Set</button>
         </div>
-        <div  id="participantSearch" style="visibility: hidden;"  class="step">
-          <h2>Participant Search</h2>
-          Search String
-          <input id="search" type="text" size="35" onkeydown="ps.searchKeyDown(event)" />
-          <table id="searchResultsTable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Birth Date</th>
-                <th>Age</th>
-              </tr>
-            </thead>
-            <tbody id="searchResults">
-              <tr><td colspan="5" align="middle">Enter search text for results</td></tr>
-            </tbody>
-          </table>
-          <p id="note" style="visibility: none;color:darkgray;font-style:italic;"><strong>*</strong>Head of household</p>
-          <br/>
-          <button id="enableParticipantInteractionsButton" onclick="ps.enableParticipantInteractionsAndDispositionSetup();" disabled>Set</button>
+
+        <div id="kb" class="step" style="visibility: hidden;">
+          <h2>Agent Tools</h2>
+          <h3>Copilot</h3>
+         <textarea id="chat" style="width:452px;height:400px;" readonly></textarea>
+         <br/><br/>
+         Search: <input type="text" id="kbSearch" size="45" placeholder="Search KB" />&nbsp;&nbsp;<button onclick="ps.getBaconIpsum()">Search</button>
+
+          <h3>Documentaion</h3>
+          <ul id="documents">
+            <li><a href="#">Call Procedures</a></li>
+            <li><a href="#">Funding Guide</a></li>
+            <li><a href="#">Client Guide</a></li>
+            <li><a href="#">Carrier Guide</a></li>
+            <li><a href="#">KB Articles</a></li>
+          </ul>
         </div>
+
         <div id="callDisposition" style="visibility: hidden;" class="step">
           <h2>Disposition of the Call</h2>
           Please indicate which members of the household you spoke with on the call, then select a disposition from the list.
           <br/>
           <br/>
           <strong>Who was on othe call?</strong>
-          <ul id="dispositionParticipants"></ul>
+          <ul id="dispositionParticipants" class="participants" ></ul>
           <br/>
-          <button id="submitDispostion" onclick="reset();" disabled>Submit</button>
+          <button id="submitDispostion" onclick="ps.resetAgentScript();" disabled>Submit</button>
         </div>
       </div>
   </body>

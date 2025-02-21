@@ -1,5 +1,7 @@
 'use strict';
-var pd = {};
+var pd = {
+  dispositionButton: null,
+};
 
 pd.init = async (gct, broadcaster, receiveBroadcastMessage) => {
   await gct.init(gct.DATALOAD.POPULATION, broadcaster, receiveBroadcastMessage);
@@ -12,77 +14,144 @@ pd.init = async (gct, broadcaster, receiveBroadcastMessage) => {
       this.add(person);
     });
   });
+
+  pd.dispositionButton = document.getElementById('setDisposition');
 };
 
-const nameDisplay = (first, middle, last) => {
-  var middleDisplay = ' ';
-  if (middle !== null) {
-    middleDisplay = ` ${middle} `;
-  }
-  return `${first}${middleDisplay}${last}`;
-};
+pd.setParticipantsInfo = ids => {
+  var participants = gct.population.filter(p => ids.includes(p.ID));
 
-pd.setParticipantInfo = id => {
-  var participant = gct.population.filter(p => p.ID === id)[0];
-  var household = gct.population.filter(
-    p => p.HeadOfHousehold === participant.HeadOfHousehold,
+  var household = [];
+  household.push(
+    gct.population.filter(p => p.ID === participants[0].household)[0],
   );
-  var isHead = participant.ID === participant.HeadOfHousehold;
 
-  document.getElementById('name').innerText =
-    nameDisplay(
-      participant.FirstName,
-      participant.MiddleName,
-      participant.LastName,
-    ) + (isHead ? ' (Head)' : '');
-
-  document.getElementById('household').style.visibility = 'visible';
-  document.getElementById('age').innerText = participant.Age;
-  document.getElementById('headOfHousehold').style.visibility = isHead
-    ? 'hidden'
-    : 'visible';
-  document.getElementById('dependants').style.visibility = isHead
-    ? 'visible'
-    : 'hidden';
-
-  //only display full household if head of household
-  if (!isHead) {
-    var head = household.filter(p => p.ID === p.HeadOfHousehold)[0];
-    document.getElementById('headName').innerText = nameDisplay(
-      head.FirstName,
-      head.MiddleName,
-      head.LastName,
-    );
-  } else {
-    var dependants = household.filter(p => p.ID !== p.HeadOfHousehold);
-    var dependantsList = document.getElementById('dependantsList');
-    dependantsList.replaceChildren([]);
-    var lis = dependants.map(d => {
-      var li = document.createElement('li');
-      li.innerText =
-        nameDisplay(d.FirstName, d.MiddleName, d.LastName) + ` (${d.Age})`;
-      return li;
+  gct.population
+    .filter(
+      p =>
+        p.HeadOfHousehold === participants[0].HeadOfHousehold &&
+        p.HeadOfHousehold !== p.ID,
+    )
+    .forEach(p => {
+      household.push(p);
     });
-    lis.forEach(li => {
-      dependantsList.appendChild(li);
+
+  var participantsDisplay = document.getElementById('participants');
+  participantsDisplay.style.visibility = 'visible';
+  const participantsList = document.getElementById('participantsDetails');
+
+  [
+    participants.filter(p => p.ID === p.HeadOfHousehold)[0],
+    ...participants
+      .filter(p => p.ID !== p.HeadOfHousehold)
+      .sort((a, b) => {
+        return b.Age - a.Age;
+      }),
+  ]
+    .map(p => {
+      var detail = document.createElement('details');
+      detail.className = 'participant';
+      var summary = document.createElement('summary');
+      detail.appendChild(summary);
+
+      summary.innerText = `(${p.ID}) ${gct.nameDisplay(p)}${
+        p.ID === p.HeadOfHousehold ? ' (Head)' : p.Spouse ? ' (Spouse)' : ''
+      }`;
+
+      var info = (key, value) => {
+        var display = document.createElement('span');
+        display.innerText = `${key}: ${value}`;
+        detail.appendChild(display);
+        detail.appendChild(document.createElement('br'));
+      };
+
+      info('ID', p.ID);
+      info('SSN', p.SSN);
+      info('Birth Date', `${p.BirthDate} (${p.Age})`);
+      info('Gender', p.Gender);
+      info('Marital Status', p.Spouse === null ? 'Single' : 'Married');
+      info('Phone', p.PhoneNumber);
+      info('Zip Code', p.ZipCode);
+
+      detail.ontoggle = e => {
+        if (detail.open) {
+          document
+            .querySelectorAll('details.participant')
+            .forEach(otherDetail => {
+              if (otherDetail !== detail) {
+                otherDetail.removeAttribute('open');
+              } else {
+                otherDetail.classList.add('expanded');
+              }
+            });
+        } else {
+          detail.classList.remove('expanded');
+        }
+      };
+
+      return detail;
+    })
+    .forEach(d => {
+      participantsList.appendChild(d);
     });
+
+  var firstChild = participantsList.children[0];
+  if (firstChild) {
+    firstChild.setAttribute('open', true);
   }
 };
 
 pd.setCallReason = reason => {
   document.getElementById('callReason').innerText = reason;
+  pd.dispositionButton.style.visibility = 'visible';
+  pd.dispositionButton.disabled = false;
 };
 
 pd.enableParticipantInteractions = () => {
-  document.getElementById('interactions').style.visibility = 'visible';
+  [...document.getElementById('participantsDetails').children].forEach(d => {
+    d.appendChild(pd.createInteractionControls());
+  });
+};
+
+pd.createInteractionControls = () => {
+  var container = document.createElement('div'); //<div id="interactions" style="visibility: hidden">
+  container.id = 'interactions';
+
+  var title = document.createElement('h3');
+  title.innerText = 'Interactions';
+  container.appendChild(title);
+
+  var links = document.createElement('ul');
+  container.appendChild(links);
+
+  var addLink = (text, callback) => {
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#';
+    a.innerText = text;
+    a.onclick = placeholderAlert;
+    li.appendChild(a);
+    links.appendChild(li);
+    return li;
+  };
+
+  container.append(addLink('Shopping'));
+  container.append(addLink('Profile'));
+  container.append(addLink('FIT'));
+  container.append(addLink('Accounts Administration Reimbursement Center'));
+  return container;
+};
+
+pd.enableCallDisposition = () => {
+  gct.sendBroadcast({
+    action: gct.MESSAGE_ACTIONS.ENABLE_CALL_DISPOSITION,
+  });
 };
 
 pd.resetParticipantDisplay = () => {
-  document.getElementById('name').innerText = '';
-  document.getElementById('age').innerText = '';
+  pd.dispositionButton.style.visibility = 'hidden';
+  pd.dispositionButton.disabled = true;
   document.getElementById('callReason').innerText = '';
-  document.getElementById('household').style.visibility = 'hidden';
-  document.getElementById('headOfHousehold').style.visibility = 'hidden';
-  document.getElementById('dependants').style.visibility = 'hidden';
-  document.getElementById('interactions').style.visibility = 'hidden';
+  document.getElementById('participants').style.visibility = 'hidden';
+  document.getElementById('participantsDetails').replaceChildren([]);
 };

@@ -1,5 +1,8 @@
 'use strict';
-const ps = {};
+const ps = {
+  selectedParticipantId: null,
+  interactionParticipants: [],
+};
 
 ps.init = async (gct, broadcaster) => {
   await gct.init(
@@ -16,18 +19,150 @@ ps.init = async (gct, broadcaster) => {
       this.add(person);
     });
   });
+
+  // Get a random partipant caller
+  ps.selectedParticipantId = ps.getRandomParticipant();
+  ps.secureTheCall();
 };
 
 ps.receiveBroadcastMessage = (sender, message) => {
-  console.log(`Received message from ${sender}: ${message}`);
+  console.log('sender', sender);
+  console.log('message', message);
+  if (sender === gct.BROADCAST_SENDER.INTERACTION) {
+    switch (message.action) {
+      case gct.MESSAGE_ACTIONS.ENABLE_CALL_DISPOSITION:
+        ps.displayDisposition();
+        break;
+    }
+  }
 };
 
-let selectedParticipantId;
-ps.sendToStandAlone = id => {
-  selectedParticipantId = id;
-  gct.sendBroadcast({
-    action: gct.MESSAGE_ACTIONS.SET_PARTICIPANT_INFO,
-    id: id,
+ps.getRandomParticipant = () =>
+  gct.population[Math.floor(Math.random() * gct.population.length)].ID;
+
+ps.secureTheCall = () => {
+  var secureParticipants = document.getElementById('secureTheCallParticipants');
+  secureParticipants.replaceChildren([]);
+
+  var participantItems = getHouseholdListControls(
+    ps.selectedParticipantId,
+    'secure',
+    (item, include, participant) => {
+      include.onchange = () => {
+        if (include.checked) {
+          item.classList.add('checked');
+        } else {
+          item.classList.remove('checked');
+        }
+        ps.setSecureSubmit();
+      };
+      var info = document.createElement('ul');
+
+      var addToInfo = (label, value) => {
+        var add = document.createElement('span');
+        add.innerText = `${label}: ${value}`;
+        info.appendChild(add);
+        info.appendChild(document.createElement('br'));
+      };
+
+      addToInfo(
+        'Relationship to Primary',
+        participant.Spouse == participant.HeadOfHousehold
+          ? 'Spouse'
+          : participant.ID == participant.HeadOfHousehold
+          ? 'Head of Household'
+          : 'Dependant',
+      );
+      addToInfo('Phone', participant.PhoneNumber);
+
+      addToInfo('Zip Code', participant.ZipCode);
+      addToInfo('Birth Date', `${participant.BirthDate} (${participant.Age})`);
+
+      item.appendChild(info);
+    },
+  );
+
+  participantItems.forEach(pi => {
+    secureParticipants.appendChild(pi);
+  });
+};
+
+ps.setSecureSubmit = () => {
+  var includes = document.getElementsByName('secure[]');
+  var submit = document.getElementById('secureTheCallButton');
+  var disabled = true;
+  for (var i = 0; i < includes.length; i++) {
+    if (includes[i].checked) {
+      disabled = false;
+      break;
+    }
+  }
+  submit.disabled = disabled;
+};
+
+ps.secureTheCallConfirmation = async () => {
+  ps.interactionParticipants = [];
+
+  document.getElementsByName('secure[]').forEach(s => {
+    if (s.checked) {
+      ps.interactionParticipants.push(Number(s.value));
+    }
+  });
+  document.getElementById('secureCall').style.visibility = 'hidden';
+  document.getElementById('secureTheCallButton').disabled = true;
+  document.getElementById('reasonForCall').style.visibility = 'visible';
+  await gct.sendBroadcast({
+    action: gct.MESSAGE_ACTIONS.SET_PARTICIPANTS_INFO,
+    ids: ps.interactionParticipants,
+  });
+};
+
+ps.setReason = async () => {
+  var reason = document.querySelector('#reasonForCall select').value;
+  await gct.sendBroadcast({
+    action: gct.MESSAGE_ACTIONS.SET_REASON_FOR_CALL,
+    reason: reason,
+  });
+  await gct.sendBroadcast({
+    action: gct.MESSAGE_ACTIONS.ENABLE_PARTICIPANT_INTERACTIONS,
+    message: null,
+  });
+  document.getElementById('reasonForCall').style.visibility = 'hidden';
+
+  document.getElementById('kb').style.visibility = 'visible';
+};
+
+ps.displayDisposition = async () => {
+  document.getElementById('kb').style.visibility = 'hidden';
+  document.getElementById('callDisposition').style.visibility = 'visible';
+
+  var dispositionParticipants = document.getElementById(
+    'dispositionParticipants',
+  );
+  dispositionParticipants.replaceChildren([]);
+
+  var dispositionControls = getHouseholdListControls(
+    ps.selectedParticipantId,
+    'disposition',
+    (item, include, participant) => {
+      var disposition = ps.createDispositionsControl();
+
+      include.onchange = () => {
+        if (include.checked) {
+          item.classList.add('checked');
+          disposition.style.visibility = 'visible';
+        } else {
+          item.classList.remove('checked');
+          disposition.style.visibility = 'hidden';
+        }
+        ps.setDispositionSubmit();
+      };
+
+      item.appendChild(disposition);
+    },
+  );
+  dispositionControls.forEach(dc => {
+    dispositionParticipants.appendChild(dc);
   });
 };
 
@@ -50,11 +185,9 @@ ps.search = () => {
             selectedRow.classList.remove('selected');
           }
           resultRow.classList.add('selected');
-          ps.sendToStandAlone(person.ID);
+          ps.sendToInteraction(person.ID);
           selectedRow = resultRow;
-          document.getElementById(
-            'enableParticipantInteractionsButton',
-          ).disabled = false;
+          document.getElementById('secureCallButton').disabled = false;
         };
         var buildColumn = value => {
           var column = document.createElement('td');
@@ -78,70 +211,47 @@ ps.searchKeyDown = e => {
   }
 };
 
-ps.setReason = async () => {
-  var reason = document.querySelector('#reasonForCall select').value;
-  await ps.setReasonForCall(gct, reason);
-  document.getElementById('reasonForCall').style.visibility = 'hidden';
-  document.getElementById('participantSearch').style.visibility = 'visible';
-};
+const getHouseholdListControls = (
+  particpantId,
+  controlName,
+  addItemControls,
+) => {
+  var householdControls = [];
+  var participantHousehold = gct.population.filter(
+    p => p.ID === particpantId,
+  )[0].HeadOfHousehold;
 
-ps.enableParticipantInteractionsAndDispositionSetup = async () => {
-  await gct.sendBroadcast({
-    action: gct.MESSAGE_ACTIONS.ENABLE_PARTICIPANT_INTERACTIONS,
-    message: null,
-  });
-  document.getElementById('participantSearch').style.visibility = 'hidden';
-  document.getElementById(
-    'enableParticipantInteractionsButton',
-  ).disabled = true;
-  document.getElementById('callDisposition').style.visibility = 'visible';
+  var household = [];
+  household.push(gct.population.filter(p => p.ID === participantHousehold)[0]);
 
-  const household = gct.population.filter(
-    p =>
-      p.ID === selectedParticipantId ||
-      p.HeadOfHousehold === selectedParticipantId,
-  );
-  var dispositionParticipants = document.getElementById(
-    'dispositionParticipants',
-  );
-  dispositionParticipants.replaceChildren([]);
+  gct.population
+    .filter(
+      p =>
+        p.HeadOfHousehold === participantHousehold &&
+        p.ID !== participantHousehold,
+    )
+    .forEach(p => household.push(p));
+
   household.forEach(p => {
-    var dp = document.createElement('li');
-    var includeParticipant = document.createElement('input');
-    includeParticipant.value = p.ID;
-    includeParticipant.id = `includeParticipant-${p.ID}`;
-    includeParticipant.name = 'includeParticipant[]';
+    var participant = document.createElement('li');
+    var include = document.createElement('input');
+    include.value = p.ID;
+    include.id = `${controlName}-${p.ID}`;
+    include.name = `${controlName}[]`;
+    include.type = 'checkbox';
 
-    var dispositions = ps.createDispositionsControl();
+    participant.appendChild(include);
 
-    includeParticipant.type = 'checkbox';
-    includeParticipant.onchange = () => {
-      dispositions.style.visibility = includeParticipant.checked
-        ? 'visible'
-        : 'hidden';
-      if (includeParticipant.checked) {
-        dp.classList.add('checked');
-      } else {
-        dp.classList.remove('checked');
-      }
-      ps.setDispositionSubmit();
-    };
-    dp.appendChild(includeParticipant);
+    var name = document.createElement('label');
+    name.innerText = gct.nameDisplay(p);
+    name.setAttribute('for', include.id);
 
-    var name = document.createElement('span');
-    name.innerText = `${p.FirstName} ${p.LastName}`;
-    dp.appendChild(name);
-    dp.appendChild(dispositions);
+    participant.appendChild(name);
+    addItemControls(participant, include, p);
 
-    dispositionParticipants.appendChild(dp);
+    householdControls.push(participant);
   });
-};
-
-ps.setReasonForCall = async (gct, reason) => {
-  gct.sendBroadcast({
-    action: gct.MESSAGE_ACTIONS.SET_REASON_FOR_CALL,
-    reason: reason,
-  });
+  return householdControls;
 };
 
 ps.CALL_DISPOSITIONS = {
@@ -207,7 +317,7 @@ ps.createDispositionsControl = () => {
 };
 
 ps.setDispositionSubmit = () => {
-  var includes = document.getElementsByName('includeParticipant[]');
+  var includes = document.getElementsByName('disposition[]');
   var submit = document.getElementById('submitDispostion');
   var disabled = true;
   for (var i = 0; i < includes.length; i++) {
@@ -217,4 +327,40 @@ ps.setDispositionSubmit = () => {
     }
   }
   submit.disabled = disabled;
+};
+
+ps.getBaconIpsum = async () => {
+  var searchBox = document.getElementById('kbSearch');
+  var search = searchBox.value;
+  searchBox.value = '';
+
+  var chat = document.getElementById('chat');
+  chat.value += `Agent: ${search}\n\n`;
+  fetch(
+    'https://baconipsum.com/api/?type=all-meat&sentences=2&start-with-lorem=1&format=text',
+  )
+    .then(response => response.text())
+    .then(text => {
+      chat.value += `Copilot: ${text}\n\n`;
+    });
+};
+
+ps.resetAgentScript = () => {
+  document.getElementById('submitDispostion').disabled = true;
+  document.getElementById('dispositionParticipants').replaceChildren([]);
+  document.getElementById('callDisposition').style.visibility = 'hidden';
+  document.getElementById('reasonForCallSelect').selectedIndex = 0;
+  document.getElementById('reasonForCall').style.visibility = 'hidden';
+  document.getElementById('secureCall').style.visibility = 'visible';
+
+  document.getElementById('chat').value = '';
+  document.getElementById('kbSearch').value = '';
+  document.getElementById('kb').style.visibility = 'hidden';
+
+  ps.selectedParticipantId = ps.getRandomParticipant();
+  ps.secureTheCall();
+
+  gct.sendBroadcast({
+    action: gct.MESSAGE_ACTIONS.RESET_PARTICIPANT_DISPLAY,
+  });
 };

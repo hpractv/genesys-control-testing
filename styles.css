@@ -56,16 +56,48 @@ div.step {
   position: absolute;
   top: 10;
 }
-ul#dispositionParticipants {
+
+ul.participants {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
-ul#dispositionParticipants li {
+ul.participants li {
   margin-top: 10px;
   margin-bottom: 15px;
   border-style: 1px solid #ccc;
 }
-ul#dispositionParticipants li.checked span {
+
+ul.participants li.checked {
   font-weight: bold;
+}
+
+ul.participants ul {
+  padding-top: 5px;
+  padding-left: 15px;
+}
+
+ul.participants li.checked label {
+  font-weight: bold;
+}
+
+details.participant {
+  padding-top: 0px;
+  padding-bottom: 5px;
+  border: 1px solid #aaa;
+}
+details.participant span {
+  padding: 10px;
+}
+
+details.expanded {
+  height: 300px;
+}
+
+details.participant summary {
+  padding: 5px;
+  font-weight: bold;
+  background-color: #aaa;
+  color: white;
+  font-size: 1.2em;
 }

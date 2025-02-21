@@ -79,8 +79,17 @@ gct.init = async (elements, sender, messageCallback) => {
 };
 
 gct.MESSAGE_ACTIONS = {
-  SET_PARTICIPANT_INFO: 1,
+  SET_PARTICIPANTS_INFO: 1,
   SET_REASON_FOR_CALL: 2,
   ENABLE_PARTICIPANT_INTERACTION: 3,
-  RESET_PARTICIPANT_DISPLAY: 4,
+  ENABLE_CALL_DISPOSITION: 4,
+  RESET_PARTICIPANT_DISPLAY: 5,
+};
+
+gct.nameDisplay = participant => {
+  var middleDisplay = ' ';
+  if (participant.MiddleName !== null) {
+    middleDisplay = ` ${participant.MiddleName} `;
+  }
+  return `${participant.FirstName}${middleDisplay}${participant.LastName}`;
 };
