@@ -113,14 +113,14 @@ gct.openTool = (title, participantName) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
-  if (window.location.href.includes('pure.cloud')) {
-    gct.pureCloudClient().coreUi.openWindow('popup-tool.html');
-  } else {
-    window.open(
-      `popup-tool.html`,
-      'Tool',
-      'height=600,width=800,location=0,resizable=0,scrollbars=0',
-    );
-  }
+  // if (window.location.href.includes('pure.cloud')) {
+  //   gct.pureCloudClient().coreUi.openWindow('popup-tool.html');
+  // } else {
+  window.open(
+    `popup-tool.html`,
+    'Tool',
+    'height=600,width=800,location=0,resizable=0,scrollbars=0',
+  );
+  // }
   return false;
 };
