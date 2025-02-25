@@ -6,22 +6,14 @@ conversationId={{gcConversationId}}
 usePopupAuth={{gcUsePopupAuth}}
 */
 'use strict';
-var gct = {
-  _pureCloudClient: null,
-  pureCloudClient: () => {
-    if (gct._pureCloudClient === null) {
-      gct._pureCloudClient = new window.purecloud.apps.ClientApp();
-      console.log('gct.pureCloudClient', gct._pureCloudClient);
-    }
-    return gct._pureCloudClient;
-  },
-};
+var gct = {};
 
 gct.getQueryParam = name => {
   return gct.urlParams.has(name) ? gct.urlParams.get(name) : null;
 };
 
 gct.DATALOAD = {
+  NONE: 0,
   POPULATION: 1,
   HEADSOFHOUSEHOLD: 2,
 };
@@ -53,16 +45,29 @@ gct.BROADCAST_SENDER = {
   INTERACTION: 2,
   SIDEBAR: 4,
   STANDALONE: 8,
+  POPUP: 16,
 };
 
 const joinBroadcast = async (sender, callback) => {
   gct.broadcastSender = sender;
   gct.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
-  gct.broadcastChannel.onmessage = event => {
+  gct.broadcastChannel.onmessage = async event => {
     const { sender, message } = event.data;
     //ignore messages from myself
     if (sender !== gct.broadcastSender) {
-      callback(sender, message);
+      if (
+        sender === gct.BROADCAST_SENDER.POPUP &&
+        message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
+      ) {
+        await gct.sendBroadcast({
+          action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+          title: localStorage.getItem(gct.TOOL_VARS.TITLE),
+          participant: localStorage.getItem(gct.TOOL_VARS.PARTICIPANT),
+          content: localStorage.getItem(gct.TOOL_VARS.CONTENT),
+        });
+      } else {
+        callback(sender, message);
+      }
     }
   };
 };
@@ -74,14 +79,24 @@ gct.sendBroadcast = async message => {
   });
 };
 
+gct.QUERY_PARAMS = {
+  LANG_TAG: 'langTag',
+  GC_TARGET_ENV: 'gcTargetEnv',
+  GC_HOST_ORIGIN: 'gcHostOrigin',
+  CONVERSATION_ID: 'conversationId',
+  USE_POPUP_AUTH: 'usePopupAuth',
+};
+
 gct.init = async (elements, sender, messageCallback) => {
   gct.urlParams = new URLSearchParams(window.location.search);
   gct.params = {};
-  gct.params.langTag = gct.getQueryParam('langTag');
-  gct.params.gcTargetEnv = gct.getQueryParam('gcTargetEnv');
-  gct.params.gcHostOrigin = gct.getQueryParam('gcHostOrigin');
-  gct.params.conversationId = gct.getQueryParam('conversationId');
-  gct.params.usePopupAuth = gct.getQueryParam('usePopupAuth');
+  gct.params.langTag = gct.getQueryParam(gct.QUERY_PARAMS.LANG_TAG);
+  gct.params.gcTargetEnv = gct.getQueryParam(gct.QUERY_PARAMS.GC_TARGET_ENV);
+  gct.params.gcHostOrigin = gct.getQueryParam(gct.QUERY_PARAMS.GC_HOST_ORIGIN);
+  gct.params.conversationId = gct.getQueryParam(
+    gct.QUERY_PARAMS.CONVERSATION_ID,
+  );
+  gct.params.usePopupAuth = gct.getQueryParam(gct.QUERY_PARAMS.USE_POPUP_AUTH);
 
   await loadData(elements);
   await joinBroadcast(sender, messageCallback);
@@ -93,6 +108,8 @@ gct.MESSAGE_ACTIONS = {
   ENABLE_PARTICIPANT_INTERACTION: 3,
   ENABLE_CALL_DISPOSITION: 4,
   RESET_PARTICIPANT_DISPLAY: 5,
+  REQUEST_POPUP_CONTROL_DATA: 6,
+  SET_POPUP_CONTROL_DATA: 7,
 };
 
 gct.nameDisplay = participant => {
@@ -113,14 +130,12 @@ gct.openTool = (title, participantName) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
-  // if (window.location.href.includes('pure.cloud')) {
-  //   gct.pureCloudClient().coreUi.openWindow('popup-tool.html');
-  // } else {
+
   window.open(
     `popup-tool.html`,
     'Tool',
     'height=600,width=800,location=0,resizable=0,scrollbars=0',
   );
-  // }
+
   return false;
 };
