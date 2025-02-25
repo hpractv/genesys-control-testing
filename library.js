@@ -6,7 +6,16 @@ conversationId={{gcConversationId}}
 usePopupAuth={{gcUsePopupAuth}}
 */
 'use strict';
-var gct = {};
+var gct = {
+  _pureCloudClient: null,
+  pureCloudClient: () => {
+    if (gct._pureCloudClient === null) {
+      gct._pureCloudClient = new window.purecloud.apps.ClientApp();
+      console.log('gct.pureCloudClient', gct._pureCloudClient);
+    }
+    return gct._pureCloudClient;
+  },
+};
 
 gct.getQueryParam = name => {
   return gct.urlParams.has(name) ? gct.urlParams.get(name) : null;
@@ -104,10 +113,14 @@ gct.openTool = (title, participantName) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
-  window.open(
-    `popup-tool.html`,
-    'Tool',
-    'height=600,width=800,location=0,resizable=0,scrollbars=0',
-  );
+  if (window.location.href.startsWith('https://apps.mypurecloud.com')) {
+    gct.pureCloudClient().coreUi.openWindow('popup-tool.html');
+  } else {
+    window.open(
+      `popup-tool.html`,
+      'Tool',
+      'height=600,width=800,location=0,resizable=0,scrollbars=0',
+    );
+  }
   return false;
 };

@@ -339,13 +339,13 @@ ps.getBaconIpsum = async () => {
   searchBox.value = '';
 
   var chat = document.getElementById('chat');
-  chat.value += `Agent: ${search}\n\n`;
+  chat.value += `Agent: ${search}\n\n...\n\n`;
   fetch(
     'https://baconipsum.com/api/?type=all-meat&sentences=2&start-with-lorem=1&format=text',
   )
     .then(response => response.text())
     .then(text => {
-      chat.value += `Copilot: ${text}\n\n`;
+      chat.value = chat.value.replace('...', `Copilot: ${text}`);
     });
 };
 
