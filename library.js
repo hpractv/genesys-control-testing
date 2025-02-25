@@ -113,7 +113,7 @@ gct.openTool = (title, participantName) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
-  if (window.location.href.startsWith('https://apps.mypurecloud.com')) {
+  if (window.location.href.includes('pure.cloud')) {
     gct.pureCloudClient().coreUi.openWindow('popup-tool.html');
   } else {
     window.open(
