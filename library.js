@@ -85,7 +85,7 @@ const joinBroadcast = async (sender, callback) => {
     }
   };
 
-  // window.addEventListener('message', gct.windowEventResponder);
+  window.addEventListener('message', gct.windowEventResponder);
 };
 
 gct.sendBroadcast = async message => {
@@ -95,43 +95,36 @@ gct.sendBroadcast = async message => {
   });
 };
 
-// gct.windowEventResponder = event => {
-//   var message = event.data;
-//   console.log('Received message:', message);
-//   //not from us
-//   if (message.sender !== gct.broadcastSender) {
-//     if (
-//       message.popupCaller === gct.broadcastSender &&
-//       message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
-//     ) {
-//       console.log("Answering popup's request for data");
+gct.windowEventResponder = event => {
+  var message = event.data;
+  console.log('Received message:', message);
+  //not from us
+  if (message.sender !== gct.broadcastSender) {
+    if (
+      message.popupCaller === gct.broadcastSender &&
+      message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
+    ) {
+      console.log("Answering popup's request for data");
 
-//       console.log('popup control', gct.popup_tool);
+      console.log('popup control', gct.popup_tool);
 
-//       var title = localStorage.getItem(gct.TOOL_VARS.TITLE);
-//       var participant = localStorage.getItem(gct.TOOL_VARS.PARTICIPANT);
-//       var content = localStorage.getItem(gct.TOOL_VARS.CONTENT);
+      var title = localStorage.getItem(gct.TOOL_VARS.TITLE);
+      var participant = localStorage.getItem(gct.TOOL_VARS.PARTICIPANT);
+      var content = localStorage.getItem(gct.TOOL_VARS.CONTENT);
 
-//       var popupData = {
-//         sender: gct.broadcastSender,
-//         action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
-//         title: title,
-//         participant: participant,
-//         content: content,
-//       };
+      var popupData = {
+        sender: gct.broadcastSender,
+        action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+        title: title,
+        participant: participant,
+        content: content,
+      };
 
-//       console.log('set pupup data', popupData);
-//       gct.popup_tool.postMessage(
-//         {
-//           sender: gct.broadcastSender,
-//           action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
-//           data: popupData,
-//         },
-//         event.origin,
-//       );
-//     }
-//   }
-// };
+      console.log('set pupup data', popupData);
+      gct.popup_tool.postMessage(popupData);
+    }
+  }
+};
 
 gct.MESSAGE_ACTIONS = {
   SET_PARTICIPANTS_INFO: 1,
@@ -169,15 +162,15 @@ gct.openTool = (title, participantName) => {
     'height=600,width=800,location=0,resizable=0,scrollbars=0',
   );
 
-  var popupData = {
-    sender: gct.broadcastSender,
-    action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
-    title: title,
-    participant: participant,
-    content: content,
-  };
+  // var popupData = {
+  //   sender: gct.broadcastSender,
+  //   action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+  //   title: title,
+  //   participant: participant,
+  //   content: content,
+  // };
 
-  gct.popup_tool.postMessage(popupData);
+  // gct.popup_tool.postMessage(popupData);
   gct.popup_tool.focus();
 
   return false;

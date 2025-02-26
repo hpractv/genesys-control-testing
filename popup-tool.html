@@ -9,43 +9,24 @@
 
       window.addEventListener('message', event => {
         // if (event.origin !== window.origin) return;
-        console.log('event', event.data);
         var message = event.data;
-        console.log('poup message', message);
+        console.log('message from calller', message);
         if (
           message &&
           message.action === gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA
         ) {
-          localStorage.setItem(gct.TOOL_VARS.TITLE, message.title);
-          localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, message.participant);
-          localStorage.setItem(gct.TOOL_VARS.CONTENT, message.content);
+          document.getElementById('popupHeader').innerText = message.title;
+          document.getElementById('participant').innerText =
+            message.participant;
+          document.getElementById('popupContent').innerText = message.content;
         }
       });
-
-      document.getElementById('popupHeader').innerText = localStorage.getItem(
-        gct.TOOL_VARS.TITLE,
-      );
-      document.getElementById('participant').innerText = localStorage.getItem(
-        gct.TOOL_VARS.PARTICIPANT,
-      );
-      document.getElementById('popupContent').innerText = localStorage.getItem(
-        gct.TOOL_VARS.CONTENT,
-      );
+      window.opener.postMessage({
+        sender: gct.broadcastSender,
+        action: gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA,
+        popupCaller: caller,
+      });
     };
-
-    // const receiveBroadcastMessage = async (sender, message) => {
-    //   if (
-    //     sender === gct.BROADCAST_SENDER.INTERACTION ||
-    //     sender === gct.BROADCAST_SENDER.AGENT_SCRIPT
-    //   ) {
-    //     if (message.action === gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA) {
-    //       document.getElementById('popupHeader').innerText = message.title;
-    //       document.getElementById('participant').innerText =
-    //         message.participant;
-    //       document.getElementById('popupContent').innerText = message.content;
-    //     }
-    //   }
-    // };
 
     window.onload = init;
   </script>

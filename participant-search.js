@@ -20,6 +20,8 @@ ps.init = async (gct, broadcaster) => {
     });
   });
 
+  ps.setDocumentLinks();
+
   // Get a random partipant caller
   ps.selectedParticipantId = ps.getRandomParticipant();
   ps.secureTheCall();
@@ -33,6 +35,29 @@ ps.receiveBroadcastMessage = (sender, message) => {
         break;
     }
   }
+};
+
+ps.setDocumentLinks = () => {
+  var links = [
+    'Call Procedures',
+    'Funding Guide',
+    'Client Guide',
+    'Carrier Guide',
+    'KB Articles',
+  ];
+  var documentsList = document.getElementById('documents');
+  documentsList.replaceChildren([]);
+  links
+    .map(l => {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#';
+      a.onclick = () => gct.openTool(l, '');
+      a.innerText = l;
+      li.appendChild(a);
+      return li;
+    })
+    .forEach(li => documentsList.appendChild(li));
 };
 
 ps.getRandomParticipant = () =>
