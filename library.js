@@ -104,10 +104,6 @@ gct.windowEventResponder = event => {
       message.popupCaller === gct.broadcastSender &&
       message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
     ) {
-      console.log("Answering popup's request for data");
-
-      console.log('popup control', gct.popup_tool);
-
       var title = localStorage.getItem(gct.TOOL_VARS.TITLE);
       var participant = localStorage.getItem(gct.TOOL_VARS.PARTICIPANT);
       var content = localStorage.getItem(gct.TOOL_VARS.CONTENT);
@@ -120,8 +116,12 @@ gct.windowEventResponder = event => {
         content: content,
       };
 
-      console.log('set pupup data', popupData);
-      gct.popup_tool.postMessage(popupData);
+      if (message.popupCaller === gct.BROADCAST_SENDER.INTERACTION) {
+        gct.popup_tool.postMessage(popupData);
+      }
+      if (message.popupCaller === gct.BROADCAST_SENDER.AGENT_SCRIPT) {
+        gct.kb_tool.postMessage(popupData);
+      }
     }
   }
 };
@@ -151,27 +151,25 @@ gct.TOOL_VARS = {
 };
 
 gct.popup_tool = null;
+gct.kb_tool = null;
+
 gct.openTool = (title, participantName) => {
+  gct.popup_tool = gct.open_window(title, participantName, 'TOOL');
+};
+gct.openKB = title => (gct.kb_tool = gct.open_window(title, '', 'KB'));
+
+gct.open_window = (title, participantName, popup_target) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
 
-  gct.popup_tool = window.open(
+  var popup = window.open(
     `popup-tool.html?${gct.QUERY_PARAMS.POPUP_CALLER}=${gct.broadcastSender}`,
-    'Tool',
+    popup_target,
     'height=600,width=800,location=0,resizable=0,scrollbars=0',
   );
 
-  // var popupData = {
-  //   sender: gct.broadcastSender,
-  //   action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
-  //   title: title,
-  //   participant: participant,
-  //   content: content,
-  // };
+  popup.focus();
 
-  // gct.popup_tool.postMessage(popupData);
-  gct.popup_tool.focus();
-
-  return false;
+  return popup;
 };

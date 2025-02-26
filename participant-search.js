@@ -52,7 +52,7 @@ ps.setDocumentLinks = () => {
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = '#';
-      a.onclick = () => gct.openTool(l, '');
+      a.onclick = () => gct.openKB(l);
       a.innerText = l;
       li.appendChild(a);
       return li;

@@ -10,7 +10,6 @@
       window.addEventListener('message', event => {
         // if (event.origin !== window.origin) return;
         var message = event.data;
-        console.log('message from calller', message);
         if (
           message &&
           message.action === gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA
