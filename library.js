@@ -8,8 +8,35 @@ usePopupAuth={{gcUsePopupAuth}}
 'use strict';
 var gct = {};
 
+gct.QUERY_PARAMS = {
+  LANG_TAG: 'langTag',
+  GC_TARGET_ENV: 'gcTargetEnv',
+  GC_HOST_ORIGIN: 'gcHostOrigin',
+  CONVERSATION_ID: 'conversationId',
+  USE_POPUP_AUTH: 'usePopupAuth',
+  POPUP_CALLER: 'popupCaller',
+};
+
 gct.getQueryParam = name => {
   return gct.urlParams.has(name) ? gct.urlParams.get(name) : null;
+};
+
+gct.init = async (elements, sender, messageCallback) => {
+  gct.urlParams = new URLSearchParams(window.location.search);
+  gct.params = {};
+  gct.params.langTag = gct.getQueryParam(gct.QUERY_PARAMS.LANG_TAG);
+  gct.params.gcTargetEnv = gct.getQueryParam(gct.QUERY_PARAMS.GC_TARGET_ENV);
+  gct.params.gcHostOrigin = gct.getQueryParam(gct.QUERY_PARAMS.GC_HOST_ORIGIN);
+  gct.params.conversationId = gct.getQueryParam(
+    gct.QUERY_PARAMS.CONVERSATION_ID,
+  );
+  gct.params.usePopupAuth = gct.getQueryParam(gct.QUERY_PARAMS.USE_POPUP_AUTH);
+
+  await loadData(elements);
+  gct.broadcastSender = sender;
+  if (messageCallback) {
+    await joinBroadcast(sender, messageCallback);
+  }
 };
 
 gct.DATALOAD = {
@@ -49,27 +76,16 @@ gct.BROADCAST_SENDER = {
 };
 
 const joinBroadcast = async (sender, callback) => {
-  gct.broadcastSender = sender;
   gct.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
   gct.broadcastChannel.onmessage = async event => {
     const { sender, message } = event.data;
     //ignore messages from myself
     if (sender !== gct.broadcastSender) {
-      if (
-        sender === gct.BROADCAST_SENDER.POPUP &&
-        message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
-      ) {
-        await gct.sendBroadcast({
-          action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
-          title: localStorage.getItem(gct.TOOL_VARS.TITLE),
-          participant: localStorage.getItem(gct.TOOL_VARS.PARTICIPANT),
-          content: localStorage.getItem(gct.TOOL_VARS.CONTENT),
-        });
-      } else {
-        callback(sender, message);
-      }
+      callback(sender, message);
     }
   };
+
+  // window.addEventListener('message', gct.windowEventResponder);
 };
 
 gct.sendBroadcast = async message => {
@@ -79,28 +95,43 @@ gct.sendBroadcast = async message => {
   });
 };
 
-gct.QUERY_PARAMS = {
-  LANG_TAG: 'langTag',
-  GC_TARGET_ENV: 'gcTargetEnv',
-  GC_HOST_ORIGIN: 'gcHostOrigin',
-  CONVERSATION_ID: 'conversationId',
-  USE_POPUP_AUTH: 'usePopupAuth',
-};
+// gct.windowEventResponder = event => {
+//   var message = event.data;
+//   console.log('Received message:', message);
+//   //not from us
+//   if (message.sender !== gct.broadcastSender) {
+//     if (
+//       message.popupCaller === gct.broadcastSender &&
+//       message.action === gct.MESSAGE_ACTIONS.REQUEST_POPUP_CONTROL_DATA
+//     ) {
+//       console.log("Answering popup's request for data");
 
-gct.init = async (elements, sender, messageCallback) => {
-  gct.urlParams = new URLSearchParams(window.location.search);
-  gct.params = {};
-  gct.params.langTag = gct.getQueryParam(gct.QUERY_PARAMS.LANG_TAG);
-  gct.params.gcTargetEnv = gct.getQueryParam(gct.QUERY_PARAMS.GC_TARGET_ENV);
-  gct.params.gcHostOrigin = gct.getQueryParam(gct.QUERY_PARAMS.GC_HOST_ORIGIN);
-  gct.params.conversationId = gct.getQueryParam(
-    gct.QUERY_PARAMS.CONVERSATION_ID,
-  );
-  gct.params.usePopupAuth = gct.getQueryParam(gct.QUERY_PARAMS.USE_POPUP_AUTH);
+//       console.log('popup control', gct.popup_tool);
 
-  await loadData(elements);
-  await joinBroadcast(sender, messageCallback);
-};
+//       var title = localStorage.getItem(gct.TOOL_VARS.TITLE);
+//       var participant = localStorage.getItem(gct.TOOL_VARS.PARTICIPANT);
+//       var content = localStorage.getItem(gct.TOOL_VARS.CONTENT);
+
+//       var popupData = {
+//         sender: gct.broadcastSender,
+//         action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+//         title: title,
+//         participant: participant,
+//         content: content,
+//       };
+
+//       console.log('set pupup data', popupData);
+//       gct.popup_tool.postMessage(
+//         {
+//           sender: gct.broadcastSender,
+//           action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+//           data: popupData,
+//         },
+//         event.origin,
+//       );
+//     }
+//   }
+// };
 
 gct.MESSAGE_ACTIONS = {
   SET_PARTICIPANTS_INFO: 1,
@@ -126,16 +157,28 @@ gct.TOOL_VARS = {
   CONTENT: 'tool-content',
 };
 
+gct.popup_tool = null;
 gct.openTool = (title, participantName) => {
   localStorage.setItem(gct.TOOL_VARS.TITLE, title);
   localStorage.setItem(gct.TOOL_VARS.PARTICIPANT, participantName);
   localStorage.setItem(gct.TOOL_VARS.CONTENT, `This is the ${title} tool.`);
 
-  window.open(
-    `popup-tool.html`,
+  gct.popup_tool = window.open(
+    `popup-tool.html?${gct.QUERY_PARAMS.POPUP_CALLER}=${gct.broadcastSender}`,
     'Tool',
     'height=600,width=800,location=0,resizable=0,scrollbars=0',
   );
+
+  var popupData = {
+    sender: gct.broadcastSender,
+    action: gct.MESSAGE_ACTIONS.SET_POPUP_CONTROL_DATA,
+    title: title,
+    participant: participant,
+    content: content,
+  };
+
+  gct.popup_tool.postMessage(popupData);
+  gct.popup_tool.focus();
 
   return false;
 };

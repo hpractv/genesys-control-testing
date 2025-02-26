@@ -124,8 +124,8 @@ pd.setCallReason = reason => {
 
 pd.enableParticipantInteractions = () => {
   var participant = document.getElementById('participantsDetails');
-  var participantName = participant.children[0].children[0].innerText;
   [...participant.children].forEach(d => {
+    var participantName = d.children[0].innerText;
     d.appendChild(pd.createInteractionControls(participantName));
   });
 };
