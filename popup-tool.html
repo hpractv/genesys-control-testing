@@ -16,7 +16,7 @@
         ) {
           document.title =
             message.title +
-            (message.title.length > 0 ? ' - ' + message.participant : '');
+            (message.participant.length > 0 ? ' - ' + message.participant : '');
           document.getElementById('popupHeader').innerText = message.title;
           document.getElementById('participant').innerText =
             message.participant;
