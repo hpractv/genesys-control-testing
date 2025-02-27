@@ -174,4 +174,5 @@ pd.resetParticipantDisplay = () => {
   document.getElementById('participants').style.visibility = 'hidden';
   document.getElementById('household').style.visibility = 'hidden';
   document.getElementById('participantsDetails').replaceChildren([]);
+  gct.closeChildToolWindows();
 };

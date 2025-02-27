@@ -392,4 +392,6 @@ ps.resetAgentScript = () => {
   gct.sendBroadcast({
     action: gct.MESSAGE_ACTIONS.RESET_PARTICIPANT_DISPLAY,
   });
+
+  gct.closeChildToolWindows();
 };

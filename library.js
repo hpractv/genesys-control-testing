@@ -37,6 +37,13 @@ gct.init = async (elements, sender, messageCallback) => {
   if (messageCallback) {
     await joinBroadcast(sender, messageCallback);
   }
+
+  window.onunload = () => {
+    if (gct.broadcastChannel) {
+      gct.broadcastChannel.close();
+    }
+    gct.closeChildToolWindows();
+  };
 };
 
 gct.DATALOAD = {
@@ -172,4 +179,13 @@ gct.open_window = (title, participantName, popup_target) => {
   popup.focus();
 
   return popup;
+};
+
+gct.closeChildToolWindows = () => {
+  if (gct.popup_tool) {
+    gct.popup_tool.close();
+  }
+  if (gct.kb_tool) {
+    gct.kb_tool.close();
+  }
 };
